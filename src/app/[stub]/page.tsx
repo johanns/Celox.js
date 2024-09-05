@@ -8,12 +8,44 @@ type Message = {
     readAt?: string;
 };
 
+type ContentProps = {
+    children: React.ReactNode;
+    bgColor: string;
+    borderColor: string;
+    textColor: string;
+};
+
+const ContentWrapper: React.FC<ContentProps> = ({
+    children,
+    bgColor,
+    borderColor,
+    textColor,
+}) => (
+    <>
+        <div
+            className={`mb-4 p-4 ${bgColor} ${textColor} border ${borderColor} rounded`}
+        >
+            {children}
+        </div>
+        <button
+            className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring"
+            onClick={() => (window.location.href = '/')}
+        >
+            New Message
+        </button>
+    </>
+);
+
 /**
  * Page component for viewing encrypted messages.
  * This component fetches an encrypted message, decrypts it using a key from the URL hash,
  * and displays the decrypted content or relevant error messages.
  */
-export default function Page({ params }: { params: { stub: string } }) {
+export default function Page({
+    params,
+}: {
+    params: { stub: string };
+}): React.ReactNode {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState<Message | null>(null);
@@ -71,31 +103,37 @@ export default function Page({ params }: { params: { stub: string } }) {
     // Display error message if any
     if (error) {
         return (
-            <div className="w-full max-w-lg p-10 bg-white shadow-sm rounded">
-                <div className="mb-4 p-4 bg-red-100 text-red-700 border border-red-400 rounded">
-                    {error}
-                </div>
-            </div>
+            <ContentWrapper
+                bgColor="bg-red-100"
+                textColor="text-red-700"
+                borderColor="border-red-400"
+            >
+                {error}
+            </ContentWrapper>
         );
     }
 
     // Display a warning if the message has already been read
     if (message && message.readAt) {
         return (
-            <div className="w-full max-w-lg p-10 bg-white shadow-sm rounded">
-                <div className="mb-4 p-4 bg-yellow-100 text-yellow-700 border border-yellow-400 rounded">
-                    Message already read: {message.readAt}
-                </div>
-            </div>
+            <ContentWrapper
+                bgColor="bg-yellow-100"
+                textColor="text-yellow-700"
+                borderColor="border-yellow-400"
+            >
+                Message already read: {message.readAt}
+            </ContentWrapper>
         );
     }
 
     // Display the decrypted message content
     return (
-        <div className="w-full max-w-lg p-10 bg-white shadow-sm rounded">
-            <div className="mb-4 p-4 bg-blue-100 text-blue-700 border border-blue-400 rounded">
-                {message?.content}
-            </div>
-        </div>
+        <ContentWrapper
+            bgColor="bg-blue-100"
+            textColor="text-blue-700"
+            borderColor="border-blue-400"
+        >
+            {message?.content}
+        </ContentWrapper>
     );
 }
