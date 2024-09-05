@@ -52,7 +52,9 @@ async function generateUniqueStub(
         });
 
         // Create a Set of existing stubs for efficient lookup
-        const stubSet = new Set(stubs.map(({ stub }) => stub));
+        const stubSet = new Set(
+            stubs.map(({ stub }: { stub: string }) => stub),
+        );
 
         // Return the first candidate that doesn't exist in the database
         for (const candidate of candidates) {
@@ -150,14 +152,13 @@ export async function deleteMessage(stub: string) {
 
 /**
  * Retrieves a message with the specified stub.
- * The result is cached to improve performance for subsequent calls.
  *
  * @param stub - The stub of the message to retrieve
  * @returns A promise that resolves to the message object, or null if not found
  */
-export const getMessage = cache(async (stub: string) => {
+export async function getMessage(stub: string) {
     return prisma.message.findUnique({ where: { stub } });
-});
+}
 
 /**
  * Marks a message with the specified stub as read.
