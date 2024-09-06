@@ -112,28 +112,47 @@ src
 
 ### Sequence diagram
 
+#### Compose (happy path)
+
 ```mermaid
 sequenceDiagram
-    participant UserA as Sender
-    participant ClientA as Sender's Browser
-    participant Server as Server
-    participant DB as Database
-    participant ClientB as Recipient's Browser
-    participant UserB as Recipient
+    autonumber
 
-    UserA->>ClientA: Compose message <br> app/page.tsx
-    ClientA->>ClientA: Generate encryption key <br> lib/crypto.ts
-    ClientA->>ClientA: Encrypt message <br> lib/crypto.ts
-    ClientA->>Server: Send encrypted message <br> app/api/message/route.ts
-    Server->>DB: Store encrypted message <br> models/message.ts
-    Server->>ClientA: Return message retrieval stub <br> app/api/message/stub/route.ts
-    UserB->>ClientB: Request to view message <br> app/[stub]/page.tsx
-    ClientB->>Server: Request encrypted message <br> app/api/message/[stub]/route.ts
-    Server->>DB: Retrieve encrypted message <br> models/message.ts
-    DB->>Server: Return encrypted message <br> models/message.ts
-    Server->>DB: Mark message as read and overwrite content <br> models/message.ts
-    Server->>ClientB: Send encrypted message <br> app/api/message/[stub]/route.ts
-    ClientB->>ClientB: Decrypt message using URL anchor key <br> lib/crypto.ts
-    ClientB->>UserB: Display message <br> app/[stub]/page.tsx
+    Sender->>Server: GET / <br/>
+    Server-->>Sender: Render <br /> /app/page.tsx
+
+    note over Sender,Server: On form submit
+    Sender->>Sender: Generate encryption key <br /> /lib/crypto.ts
+    Sender->>Sender: Encrypt data <br /> /lib/crypto.ts
+    Sender->>+Server: Submit encrypted form data
+
+    Server<<-->>Database: Find unique retrieval stub <br /> /models/message.ts
+    Server<<-->>Database: Store encrypted form data <br /> /models/message.ts
+    Server-->>-Sender: Render JSON: {stub: stub}
+
+    Sender->>Sender: Construct retrieval URL <br /> (stub + key)
+
+    note over Sender,Server: Show retrieval URL
 ```
 
+#### Retrieve (happy path)
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    Recipient->>+Server: GET /<stub> <br /> /app/[stub]/page.tsx
+    Server-->>-Recipient: Render page
+
+    note over Recipient,Server: On page load <br /> useEffect(...)
+
+    Recipient->>+Server: GET /api/message/[stub] <br /> /app/api/message/[stub]/route.ts
+    Server<<-->>Database: Find encrypted data <br /> /models/message.ts
+    Server<<-->>Database: Mark message as read <br /> /models/message.ts
+    Server-->>-Recipient: Render JSON: {data: encryptedData}
+
+    Recipient->>Recipient: Extract key from URL <br /> /lib/crypto.ts
+    Recipient->>Recipient: Decrypt data <br /> /lib/crypto.ts
+
+    note over Recipient,Server: Show decrypted data or already read notice
+```
