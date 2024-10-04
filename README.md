@@ -6,10 +6,10 @@ SecureShare is a tutorial and reference implementation of a one-time-use message
 
 ### Core functionality
 
-- Messages are encrypted directly on the sender’s device before being transmitted, and the server stores only the encrypted data, without ever accessing the encryption key.
-- Once the message is stored, a unique URL is generated that includes the encryption key as an anchor, ensuring that the server remains unaware of the key.
-- Recipients can use this URL to securely decrypt and view the message.
-- The message is automatically marked as read and the content is overwritten, ensuring that it can only be viewed once.
+- Messages are encrypted directly on the sender's device (browser) before being sent, so the server only receives and stores encrypted data without ever accessing the encryption key.
+- After storing the encrypted message, the server generates a unique retrieval key and returns it to the sender. The sender then creates a unique URL that includes this retrieval key and appends the encryption key in the URL's anchor (the part after '#'). Since the anchor is not transmitted to the server during HTTP requests, the server remains unaware of the encryption key.
+- Recipients use this unique URL to retrieve the encrypted message from the server and decrypt it using the encryption key embedded in the URL's anchor.
+- Once the message is viewed, it is automatically marked as read and its content is overwritten on the server, ensuring that it can only be accessed once.
 
 See [Sequence diagram](#sequence-diagram) below for a detailed overview of the process
 
